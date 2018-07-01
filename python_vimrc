@@ -124,6 +124,8 @@ nnoremap <C-H> <C-W><C-H>
 set splitbelow
 set splitright
 
+"用F1显示或者隐藏对齐线
+map <F1> :IndentLinesToggle<CR>
 
 "快捷键文件树
 map <F2> :NERDTreeToggle<CR>

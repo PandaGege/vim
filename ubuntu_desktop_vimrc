@@ -1,0 +1,159 @@
+"F1 搜索高亮开关
+"F2 显示或者隐藏对齐线
+"F3 开关文件树
+"F4 文件首部添加信息
+"F7 PYTHON PEP8 格式检查
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+set rtp+=~/.vim/bundle/Vundle.vim
+set rtp+=/home/regan/.local/lib/python2.7/site-packages/powerline/bindings/vim/
+call vundle#begin()
+
+Plugin 'VundleVim/Vundle.vim'
+
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+"折叠
+" Plugin 'tmhedberg/SimpylFold'
+"文件树
+Plugin 'scrooloose/nerdtree'
+"补全
+Plugin 'Valloric/YouCompleteMe'
+"缩进对齐
+Plugin 'Yggdroot/indentLine'
+"pep8 F7检查
+Plugin 'nvie/vim-flake8'
+"git
+Plugin 'tpope/vim-fugitive'
+
+call vundle#end()            " required
+filetype plugin indent on    " required
+
+" begin airline and airline-themes
+set laststatus=2  "永远显示状态栏
+set t_Co=256    "在windows中用xshell连接打开vim可以显示色彩
+let g:airline_powerline_fonts = 1  " 支持 powerline 字体
+let g:airline#extensions#tabline#enabled = 1  "显示窗口tab和buffer
+
+" tabline中当前buffer两端的分隔字符
+let g:airline#extensions#tabline#left_sep = ' '
+" tabline中未激活buffer两端的分隔字符
+let g:airline#extensions#tabline#left_alt_sep = '|'
+" tabline中buffer显示编号
+let g:airline#extensions#tabline#buffer_nr_show = 1
+
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
+
+" powerline symbols
+let g:airline_left_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_sep = ''
+let g:airline_right_alt_sep = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = '☰'
+let g:airline_symbols.maxlinenr = ''
+
+" 主题
+let g:airline_theme='light'
+" end airline and airline-themes
+
+
+" 文件树 忽略后缀
+let NERDTreeIgnore=['\~$', '\.pyc$', '\.swp$']
+
+"for git branch 显示
+let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#branch#empty_message = ''
+let g:airline#extensions#branch#vcs_priority = ["git", "mercurial"]
+let g:airline#extensions#branch#displayed_head_limit = 10
+
+
+"begin 折叠, 折叠总是默认开启，不知怎么关闭，暂时禁用
+" set foldmethod=indent
+" let g:SimpylFold_docstring_preview=1
+" let g:SimpylFold_fold_import=1
+" nnoremap <space> za
+"end 折叠
+
+" python pep8风格
+au BufNewFile,BufRead *.py
+    \ set tabstop=4     |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4  |
+    \ set textwidth=79  |
+    \ set expandtab     |
+    \ set autoindent    |
+    \ set fileformat=unix
+
+" Press Space to turn off highlighting and clear any message already displayed.
+":nnoremap <silent> <Space> :nohlsearch<Bar>:echo<CR>
+" Press F1 to toggle highlighting on/off, and show current value.
+:noremap <F1> :set hlsearch! hlsearch?<CR>
+
+"用fj替换esc键
+inoremap fj <ESC>
+
+" 简化窗口切换指令
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+" 打开新窗口后自动切换到新窗口
+set splitbelow
+set splitright
+
+"用F2显示或者隐藏对齐线
+map <F2> :IndentLinesToggle<CR>
+
+"快捷键文件树
+map <F3> :NERDTreeToggle<CR>
+
+
+"将键盘上的F4功能键映射为添加作者信息的快捷键
+map <F4> ms:call TitleDet()<cr>'s
+function AddTitle()
+        call append(0,"# coding: utf-8")
+        call append(1,"# ----------------------------------------------")
+        call append(2,"# author            : regan")
+        call append(3,"# email             : x-regan@qq.com")
+        call append(4,"# create at         : ".strftime("%Y-%m-%d %H:%M"))
+        call append(5,"# last modify       : ".strftime("%Y-%m-%d %H:%M"))
+        call append(6,"# ----------------------------------------------")
+        call append(7,"")
+        echohl WarningMsg | echo "Successful in adding the copyright." | echohl None
+endf
+
+"更新最近修改时间和文件名
+function UpdateTitle()
+        normal m'
+        execute '/# last modify\s*:/s@:.*$@\=strftime(": %Y-%m-%d %H:%M")@'
+        normal "
+        normal m
+        echohl WarningMsg | echo "Successful in updating the copy right."| echohl None
+endfunction
+
+"判断前10行代码里面，是否有Last modified这个单词，
+"如果没有的话，代表没有添加过作者信息，需要新添加；
+"如果有的话，那么只需要更新即可
+function TitleDet()
+        let n=1
+        while n < 8
+                let line = getline(n)
+                if line =~'^\#\s*\S*last\smodify\S*.*$'
+                        call UpdateTitle()
+                        return
+                endif
+                let n = n + 1
+        endwhile
+        call AddTitle()
+endfunction
+
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
